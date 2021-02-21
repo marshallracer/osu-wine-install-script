@@ -1,8 +1,5 @@
 #!/bin/bash
 
-
-#set -e # play it safe      # Causes problems apparently...
-
 echo "ROOT IS REQUIRED TO ADD OSU TO /usr/bin and /usr/share"
 sudo echo "Thanks!"
 
@@ -23,59 +20,62 @@ print_sect () {
   echo $BORDER
 }
 
-print_sect "ATTENTION: THIS SCRIPT ASSUMES WINE AND WINETRICKS ARE ALREADY INSTALLED"
 
+# thanks to jvyden for dep-checks
+echo "Checking to see if wine and winetricks are installed..."
 
-
-# Wine environ
-if [[ ! -n "$WINEPREFIX" ]] ; then
-  export WINEPREFIX="$HOME/osu-wine"
+if [ ! command -v wine &> /dev/null ]; then
+  echo "Wine is not installed! Exiting."
+  exit 1
 fi
-if [[ ! -n "$WINE" ]] ; then
+
+if [ ! command -v winetricks &> /dev/null ]; then
+  echo "Winetricks is not installed! Exiting."
+  exit 1
+fi
+
+if [ ! command -v wget &> /dev/null ]; then
+  echo "wget is not installed! Exiting."
+  exit 1
+fi
+
+if [ ! command -v curl &> /dev/null ]; then
+  echo "curl is not installed! Exiting."
+  exit 1
+fi
+
+
+# set Wine environment variables for installation - change to your liking or needs before installation
+if [[ ! -n "$WINEPREFIX" ]] ; then
+  export WINEPREFIX="$HOME/Games/osu-wine"
+fi
+if [[ ! -n "$WINE" ]]; then
   export WINE="wine"
 fi
-if [[ ! -n "$WINESERVER" ]] ; then
+if [[ ! -n "$WINESERVER" ]]; then
   export WINESERVER="wineserver"
 fi
-if [[ ! -n "$WINETRICKS" ]] ; then
+if [[ ! -n "$WINETRICKS" ]]; then
   export WINETRICKS="winetricks"
 fi
-if [[ ! -n "$WINECFG" ]] ; then
-  export WINECFG="winecfg"
+if [[ ! -n "$DISCORDRPC" ]]; then
+  export DISCORDRPC="true"
 fi
 export WINEARCH=win32
 
 
-
-# COMMANDS
-WINETRICKS_CREATE_PREFIX="$WINETRICKS -q dotnet462 cjkfonts gdiplus"
-WINETRICKS_ALSA="$WINETRICKS sound=alsa"
-
 # Create wineprefix
 print_sect "CREATING WINEPREFIX"
-$WINETRICKS_CREATE_PREFIX
+echo "If wine asks you to install wine-mono or wine-gecko, say no or cancel. This will cause problems later."
+$WINETRICKS --force dotnet45 # force flag for recent wine 5.x versions; no -q so the user knows whats happening
+$WINETRICKS -q cjkfonts gdiplus # fixes fonts, graphics
 
-
-# Manual winecfg step
-print_sect "MANUAL STEP"
-echo "> \"navigate to graphics and ensure that "allow the window manager to decorate the windows" and "allow the window manager to control the windows" are enabled. this can allow native fullscreen to work which can help performance on bloated desktop environments like gnome\""
-echo "See https://osu.ppy.sh/community/forums/topics/367783"
-
-"$WINECFG"
-
-print_sect "ALSA"
-
-if [[ "$ALSATWEAK" == "true" ]]; then
-  $WINETRICKS_ALSA
-else
-  echo "SKIPPING ALSA TWEAK"
-fi
-
+# change directory to newly created prefix
+cd "$WINEPREFIX"
 
 # dsound tweak
 print_sect "dsound tweak"
 cat > dsound.reg << "EOF"
-
 Windows Registry Editor Version 5.00
 
 
@@ -89,12 +89,13 @@ EOF
 
 "$WINE" regedit dsound.reg
 
-print_sect "osu! installer step. PLEASE CLOSE OSU WHEN LAUNCHED."
 # osu! Installer
+print_sect "Installing osu! Please close osu! after it has launched!"
 
 if [[ -e "osu!install.exe" ]]; then
   echo "osu! installer already downloaded!"
 else
+  echo "Downloading osu! installer..."
   wget 'https://m1.ppy.sh/r/osu!install.exe'
 fi
 
@@ -103,7 +104,7 @@ fi
 
 print_sect "POST INSTALL STEPS"
 # Post install
-OSU_SC_PATH="$HOME/osu"
+OSU_SC_PATH="$HOME/Games/osu"
 
 if [[ ! -e $OSU_SC_PATH ]] ; then
   ln -sv "$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!" "$OSU_SC_PATH"
@@ -111,55 +112,48 @@ if [[ ! -e $OSU_SC_PATH ]] ; then
 fi
 
 # Launch script
-
-print_sect "REQUESTING ROOT ACCESS TO ADD OSU TO /usr/bin"
-
 cat > osu << "EOF"
 #!/bin/sh
-
-
 export vblank_mode=0
-
 export WINEARCH=win32
-
 EOF
 
 echo "export WINEPREFIX=\"$WINEPREFIX\""  >> osu
-echo "\"$WINE\" \"$WINEPREFIX/drive_c/users/\$USER/Local Settings/Application Data/osu!/osu!.exe\" \"\$@\"" >> osu
+echo "cd \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!\"" >> osu
+
+print_sect "Discord RPC"
+if [[ "$DISCORDRPC" == "true" ]]; then
+  echo "Downloading Discord RPC bridge..."
+  curl -O -J -L 'https://github.com/0e4ef622/wine-discord-ipc-bridge/releases/download/v0.0.1/winediscordipcbridge.exe'
+  mv "winediscordipcbridge.exe" "$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/"
+  echo "\"$WINE\" \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/winediscordipcbridge.exe\" &" >> osu
+else
+  echo "Skipping Discord RPC install."
+fi
+
+echo "\"$WINE\" \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/osu!.exe\" \"\$@\"" >> osu
 
 
 sudo mv osu /usr/bin/osu
 sudo chmod +x /usr/bin/osu
 
 
-
 # Kill script
 cat > osukill << "EOF"
 #!/bin/sh
-
-
-export vblank_mode=0
-
 export WINEARCH=win32
-
 EOF
 
 echo "export WINEPREFIX=\"$WINEPREFIX\"" >> osukill
 echo "\"$WINESERVER\" -k" >> osukill
 
-
 sudo mv osukill /usr/bin/osukill
 sudo chmod +x /usr/bin/osukill
 
 
-
-print_sect "REQUESTING ROOT ACCESS TO ADD OSU DESKTOP FILE TO /usr/share"
-
 # Desktop file
-
 OSU_LOGO_URL="https://i.ppy.sh/916068c8e2d5f90be7766da5ce0ee7a7ea6c99b3/68747470733a2f2f6f73752e7070792e73682f68656c702f77696b692f4272616e645f6964656e746974795f67756964656c696e65732f696d672f75736167652d66756c6c2d636f6c6f75722e706e67"
-
-sudo wget "$OSU_LOGO_URL" -O "/usr/share/icons/osulogo.png"
+wget "$OSU_LOGO_URL" -O "$HOME/.local/share/icons/osulogo.png"
 
 cat > "osu!.desktop" << "EOF"
 [Desktop Entry]
@@ -178,21 +172,16 @@ Icon=osulogo
 
 StartupWMClass=osu!.exe
 
-Categories=
+Categories=Games
 
 EOF
 
-sudo mv "osu!.desktop" "/usr/share/applications"
-sudo chmod +x "/usr/share/applications/osu!.desktop"
-
-
-
-
+mv "osu!.desktop" "$HOME/.local/share/applications"
+chmod +x "$HOME/.local/share/applications/osu!.desktop"
 
 # Cleanup
 cd /tmp
 rm -r "$TMP_DIR"
 
-
 # Finished!
-print_sect "Finished! Please report any issues with this script at https://github.com/mrniceguy127/osu-wine-install-script"
+print_sect "Finished! Please report any issues with this script at https://github.com/marshallracer/osu-wine-install-script"
