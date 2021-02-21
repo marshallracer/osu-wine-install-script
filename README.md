@@ -1,38 +1,37 @@
 # osu-wine-install-script
 
-An osu! wine installer! This one basically just goes through the steps listed [here](https://osu.ppy.sh/community/forums/topics/367783) with the exception of the optional Japanese fonts fix.
+An osu-wine installer, forked from mrniceguy127's installer. This one basically just goes through the steps listed [here](https://osu.ppy.sh/community/forums/topics/367783) with the exception of the optional Japanese fonts fix.
 
 # Instructions
 
-1. Install wine and winetricks.
-2. `git clone https://github.com/mrniceguy127/osu-wine-install-script.git`
+1. Install wine and winetricks. This has been tested with the latest version of wine-staging 5.22 at the time of writing.
+2. `git clone https://github.com/marshallracer/osu-wine-install-script`
 3. `cd osu-wine-install-script`
-4. `./install-osu` When you see the winecfg window pop up, make sure to follow the instructions shown in the terminal. osu! will also launch at some point, so make sure to close it when it does.
-  * If you want to use the alsa tweak (see guide linked at the top), do `ALSATWEAK="true" ./install-osu`. I made this an option because it gave me a lot of audio problems (extremely fast/staticy/distorted).
+4. `./install-osu` Keep in mind that because of the necessary dependencies installed through winetricks it WILL take a while to install everything. osu! will also launch at some point, so make sure to close it when it does.
 5. Launch osu. You can either type `osu` in the command line, or if you like GUI's, you can just search "osu" in whatever application launcher you might have. Use the command `osukill` to force kill osu.
 
-You can also specifiy your own WINEPREFIX, WINESERVER, WINE, WINECFG, and WINETRICKS in your environment. Defaults are used otherwise of course. e.g. `WINEPREFIX="..." WINE="..." WINESERVER="..." WINECFG="..." ./install-osu`
+You can also specifiy your own WINEPREFIX, WINESERVER, WINE and WINETRICKS in your environment. Defaults are used otherwise of course. e.g. `WINEPREFIX="..." WINE="..." WINESERVER="..." ./install-osu`
 
 # Discord Rich Presence
 
 Check [here](https://osu.ppy.sh/community/forums/topics/1005264?start=7313104).
 
-Basically, you just want to set your wine prefix to `~/osu-wine` when launching that discord ipc bridge executable. For example: `WINEPREFIX="$HOME/osu-wine" wine winediscordipcbridge.exe `
-
-I've included an example script in this repo that launches osu along with the rich presence ipc bridge.
+Thanks to jvyden for their code which includes discordrpc during the install. It should launch automatically when starting osu! via terminal or through your application launcher.
 
 # File listing
 
-- Default WINEPREFIX: `~/osu-wine`
-- osu! folder shortcut: `~/osu`
+- Default WINEPREFIX: `~/Games/osu-wine`
+- osu! folder shortcut: `~/Games/osu`
 - osu! launch script: `/usr/bin/osu`
 - osu! kill script: `/usr/bin/osukill`
-- osu! desktop file: `/usr/share/applications/osu!.desktop`
-- osu! logo file: `/usr/share/icons/osulogo.png`
+- osu! desktop file: `~/.local/share/applications/osu!.desktop`
+- osu! logo file: `~/.local/share/icons/osulogo.png`
 
 
 # Installation Troubleshooting
 
+(this should hopefully not happen anymore but stays in case your install may hang anyway)
+
 > Running /usr/bin/wineserver -w. This will hang until all wine processes in prefix=/home/user/osu-wine terminate
 
-Winetricks got stuck here forever multiple times while installing the dotnet runtime. I never found out if it was ever able to complete. I ended up just doing this in a separate terminal everytime it got stuck: `WINEPREFIX="$HOME/osu-wine" wineserver -k`.
+Winetricks sometimes gets stuck while setting the windows version after installing .NET. Whenever it gets stuck just type the following command in a seperate terminal: `WINEPREFIX="$HOME/Games/osu-wine" wineserver -k`.
