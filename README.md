@@ -30,6 +30,12 @@ Thanks to jvyden for their code which includes discordrpc during the install. It
 
 # Installation Troubleshooting
 
+NOTE FOR DEBIAN-BASED DISTRO USERS:
+
+The wine in the main repo is quite outdated and is known to have many issues with both installing and running osu, so please install the staging version, see [here](https://wiki.winehq.org/Debian)
+
+<br>
+
 (this should hopefully not happen anymore but stays in case your install may hang anyway)
 
 > Running /usr/bin/wineserver -w. This will hang until all wine processes in prefix=/home/user/osu-wine terminate
