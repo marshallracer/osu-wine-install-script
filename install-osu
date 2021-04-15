@@ -1,10 +1,51 @@
 #!/bin/bash
 
-echo "ROOT IS REQUIRED TO ADD OSU TO /usr/bin and /usr/share"
-sudo echo "Thanks!"
+# jvyden's dep-checks method has been replaced
+echo -e "Checking if dependencies are installed...\n"
 
-if [[ $? != 0 ]] ; then
-  exit
+for i in $(cat dependencies.list); do
+	which $i > /dev/null
+	if [[ $? == "1" ]]; then
+		echo "Dependency \"$i\" not found"
+		missing_deps=true
+	fi
+done
+
+if [[ $missing_deps ]]; then
+	echo -e "\nInstall missing dependencies and try again"
+	exit 1
+fi
+
+if [[ $(uname) == "Linux" ]]; then
+  os="linux"
+elif [[ $(uname) == "Darwin" ]]; then
+  os="mac"
+else
+  echo "Your system is not supported by osu-install"
+  exit 1
+fi
+
+if [[ $1 && $1 == "--no-root" ]]; then
+  if [[ $os == "mac" ]]; then
+    no_root="mac"
+  else
+    no_root=true
+  fi
+else
+  if [[ $os == "mac" ]]; then
+    no_root="mac"
+  else
+    no_root=false
+  fi
+fi
+
+if [[ $no_root == "false" ]]; then
+  echo "ROOT IS REQUIRED TO ADD OSU TO /usr/bin and /usr/share"
+  sudo echo "Thanks!"
+
+  if [[ $? != 0 ]] ; then
+    exit
+  fi
 fi
 
 TMP_DIR="/tmp/osu-wine"
@@ -19,31 +60,6 @@ print_sect () {
   echo "$1"
   echo $BORDER
 }
-
-
-# thanks to jvyden for dep-checks
-echo "Checking to see if wine and winetricks are installed..."
-
-if [ ! command -v wine &> /dev/null ]; then
-  echo "Wine is not installed! Exiting."
-  exit 1
-fi
-
-if [ ! command -v winetricks &> /dev/null ]; then
-  echo "Winetricks is not installed! Exiting."
-  exit 1
-fi
-
-if [ ! command -v wget &> /dev/null ]; then
-  echo "wget is not installed! Exiting."
-  exit 1
-fi
-
-if [ ! command -v curl &> /dev/null ]; then
-  echo "curl is not installed! Exiting."
-  exit 1
-fi
-
 
 # set Wine environment variables for installation - change to your liking or needs before installation
 if [[ ! -n "$WINEPREFIX" ]] ; then
@@ -67,8 +83,15 @@ export WINEARCH=win32
 # Create wineprefix
 print_sect "CREATING WINEPREFIX"
 echo "If wine asks you to install wine-mono or wine-gecko, say no or cancel. This will cause problems later."
-$WINETRICKS --force dotnet45 # force flag for recent wine 5.x versions; no -q so the user knows whats happening
+$WINETRICKS --force dotnet45 # force flag for wine 5.x+ versions; no -q so the user knows whats happening
 $WINETRICKS -q cjkfonts gdiplus # fixes fonts, graphics
+
+print_sect "ALSA"
+if [[ "$ALSATWEAK" == "true" ]]; then
+  $WINETRICKS sound=alsa
+else
+  echo "Skipping ALSA tweak."
+fi
 
 # change directory to newly created prefix
 cd "$WINEPREFIX"
@@ -78,13 +101,9 @@ print_sect "dsound tweak"
 cat > dsound.reg << "EOF"
 Windows Registry Editor Version 5.00
 
-
 [HKEY_CURRENT_USER\Software\Wine\DirectSound]
-
 "HelBuflen"="512"
-
 "SndQueueMax"="3"
-
 EOF
 
 "$WINE" regedit dsound.reg
@@ -115,6 +134,7 @@ fi
 cat > osu << "EOF"
 #!/bin/sh
 export vblank_mode=0
+export __GL_SYNC_TO_VBLANK=0
 export WINEARCH=win32
 EOF
 
@@ -126,16 +146,33 @@ if [[ "$DISCORDRPC" == "true" ]]; then
   echo "Downloading Discord RPC bridge..."
   curl -O -J -L 'https://github.com/0e4ef622/wine-discord-ipc-bridge/releases/download/v0.0.1/winediscordipcbridge.exe'
   mv "winediscordipcbridge.exe" "$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/"
-  echo "\"$WINE\" \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/winediscordipcbridge.exe\" &" >> osu
+  if [[ $os == "linux" ]]; then
+    echo "\"$WINE\" \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/winediscordipcbridge.exe\" &" >> osu
+  elif [[ $os == "mac" ]]; then
+    echo "exec $(which wine) \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/winediscordipcbridge.exe\" &" >> osu
+  fi
 else
   echo "Skipping Discord RPC install."
 fi
 
-echo "\"$WINE\" \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/osu!.exe\" \"\$@\"" >> osu
+if [[ $os == "linux" ]]; then
+  echo "\"$WINE\" \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/osu!.exe\" \"\$@\"" >> osu
+elif [[ $os == "mac" ]]; then
+  echo "exec $(which wine) \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/osu!.exe\" \"\$@\"" >> osu
+fi
 
-
-sudo mv osu /usr/bin/osu
-sudo chmod +x /usr/bin/osu
+if [[ $no_root == "true" ]]; then
+  # creating bin folder in .local to avoid use of root in case it doesn't exist
+  # remember to add the folder to your $PATH by issuing "export PATH=$HOME/.local/bin:$PATH" in a terminal
+  mkdir -p "$HOME/.local/bin/"
+  mv osu $HOME/.local/bin/osu
+  chmod +x $HOME/.local/bin/osu
+elif [[ $no_root == "false" ]]; then
+  print_sect "REQUESTING ROOT ACCESS TO ADD OSU TO /usr/bin"
+  sudo mv osu /usr/bin/osu
+  sudo chmod +x /usr/bin/osu
+fi
+# todo: add whatever is needed for macOS to this section that is equivalent to the oldsu script
 
 
 # Kill script
@@ -147,38 +184,33 @@ EOF
 echo "export WINEPREFIX=\"$WINEPREFIX\"" >> osukill
 echo "\"$WINESERVER\" -k" >> osukill
 
-sudo mv osukill /usr/bin/osukill
-sudo chmod +x /usr/bin/osukill
+if [[ $no_root == "true" ]]; then
+  mv osukill $HOME/.local/bin/osukill
+  chmod +x $HOME/.local/bin/osukill
+elif [[ $no_root == "false" ]]; then
+  sudo mv osukill /usr/bin/osukill
+  sudo chmod +x /usr/bin/osukill
+fi
 
+if [[ $os == "linux" ]]; then
+  # Desktop file
+  OSU_LOGO_URL="https://i.ppy.sh/916068c8e2d5f90be7766da5ce0ee7a7ea6c99b3/68747470733a2f2f6f73752e7070792e73682f68656c702f77696b692f4272616e645f6964656e746974795f67756964656c696e65732f696d672f75736167652d66756c6c2d636f6c6f75722e706e67"
+  wget "$OSU_LOGO_URL" -O "$HOME/.local/share/icons/osulogo.png"
 
-# Desktop file
-OSU_LOGO_URL="https://i.ppy.sh/916068c8e2d5f90be7766da5ce0ee7a7ea6c99b3/68747470733a2f2f6f73752e7070792e73682f68656c702f77696b692f4272616e645f6964656e746974795f67756964656c696e65732f696d672f75736167652d66756c6c2d636f6c6f75722e706e67"
-wget "$OSU_LOGO_URL" -O "$HOME/.local/share/icons/osulogo.png"
-
-cat > "osu!.desktop" << "EOF"
+  cat > "osu!.desktop" << "EOF"
 [Desktop Entry]
-
 Encoding=UTF-8
-
 Name=osu!
-
 Comment=A free-to-win rhythm game. Rhythm is just a click away!
-
 Type=Application
-
 Exec=osu %F
-
 Icon=osulogo
-
 StartupWMClass=osu!.exe
-
 Categories=Games
-
 EOF
-
-mv "osu!.desktop" "$HOME/.local/share/applications"
-chmod +x "$HOME/.local/share/applications/osu!.desktop"
-
+  mv "osu!.desktop" "$HOME/.local/share/applications"
+  chmod +x "$HOME/.local/share/applications/osu!.desktop"
+fi
 # Cleanup
 cd /tmp
 rm -r "$TMP_DIR"
