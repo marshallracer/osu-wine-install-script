@@ -156,7 +156,7 @@ else
 fi
 
 if [[ $os == "linux" ]]; then
-  echo "\"$WINE\" \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/osu!.exe\" \"\$@\"" >> osu
+  echo "$WINE \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/osu!.exe\" \"\$@\"" >> osu
 elif [[ $os == "mac" ]]; then
   echo "exec $(which wine) \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/osu!.exe\" \"\$@\"" >> osu
 fi
