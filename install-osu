@@ -82,7 +82,7 @@ export WINEARCH=win32
 
 # Create wineprefix
 print_sect "CREATING WINEPREFIX"
-echo "If wine asks you to install wine-mono or wine-gecko, say no or cancel. This will cause problems later."
+echo "If wine asks you to install wine-mono or wine-gecko, say no or cancel. Installing these will cause problems later."
 $WINETRICKS --force dotnet45 # force flag for wine 5.x+ versions; no -q so the user knows whats happening
 $WINETRICKS -q cjkfonts gdiplus # fixes fonts, graphics
 
@@ -126,7 +126,7 @@ print_sect "POST INSTALL STEPS"
 OSU_SC_PATH="$HOME/Games/osu"
 
 if [[ ! -e $OSU_SC_PATH ]] ; then
-  ln -sv "$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!" "$OSU_SC_PATH"
+  ln -sv "$WINEPREFIX/drive_c/users/$USER/AppData/Local/osu!" "$OSU_SC_PATH"
   echo "Created osu! folder shortcut in current user's home."
 fi
 
@@ -139,7 +139,7 @@ export WINEARCH=win32
 EOF
 
 echo "export WINEPREFIX=\"$WINEPREFIX\""  >> osu
-echo "cd \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!\"" >> osu
+echo "cd \"$WINEPREFIX/drive_c/users/$USER/AppData/Local/osu!\"" >> osu
 
 print_sect "Discord RPC"
 if [[ "$DISCORDRPC" == "true" ]]; then
@@ -147,18 +147,18 @@ if [[ "$DISCORDRPC" == "true" ]]; then
   curl -O -J -L 'https://github.com/0e4ef622/wine-discord-ipc-bridge/releases/download/v0.0.1/winediscordipcbridge.exe'
   mv "winediscordipcbridge.exe" "$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/"
   if [[ $os == "linux" ]]; then
-    echo "\"$WINE\" \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/winediscordipcbridge.exe\" &" >> osu
+    echo "\"$WINE\" \"$WINEPREFIX/drive_c/users/$USER/AppData/Local/osu!/winediscordipcbridge.exe\" &" >> osu
   elif [[ $os == "mac" ]]; then
-    echo "exec $(which wine) \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/winediscordipcbridge.exe\" &" >> osu
+    echo "exec $(which wine) \"$WINEPREFIX/drive_c/users/$USER/AppData/Local/osu!/winediscordipcbridge.exe\" &" >> osu
   fi
 else
   echo "Skipping Discord RPC install."
 fi
 
 if [[ $os == "linux" ]]; then
-  echo "$WINE \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/osu!.exe\" \"\$@\"" >> osu
+  echo "$WINE \"$WINEPREFIX/drive_c/users/$USER/AppData/Local/osu!/osu!.exe\" \"\$@\"" >> osu
 elif [[ $os == "mac" ]]; then
-  echo "exec $(which wine) \"$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/osu!.exe\" \"\$@\"" >> osu
+  echo "exec $(which wine) \"$WINEPREFIX/drive_c/users/$USER/AppData/Local/osu!/osu!.exe\" \"\$@\"" >> osu
 fi
 
 if [[ $no_root == "true" ]]; then
