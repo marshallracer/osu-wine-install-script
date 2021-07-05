@@ -2,6 +2,9 @@
 
 An osu-wine installer, forked from mrniceguy127's installer. This one basically just goes through the steps listed [here](https://osu.ppy.sh/community/forums/topics/367783) with the exception of the optional Japanese fonts fix.
 
+# Important Notice
+Stop changing the path by hand in the script you dinguses, there's info on how to set a custom path in the Instructions.
+
 # Instructions
 
 1. Install wine and winetricks. This has been tested with the latest version of wine-staging 5.22 at the time of writing.
