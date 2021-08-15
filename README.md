@@ -11,6 +11,10 @@ The most relevant for you if you want to install osu in a non-default location w
 # Pre-installation notice
 This is 100% relevant to nVidia/Intel GPUs. AMD GPUs should be fine but in case any issues come up refer to this.
 
+
+Make sure `lib32-nvidia-utils` is installed or else the game won't run at full speed for some reason.
+
+
 The easiest way is to follow the [Lutris documentation on installing the most important dependencies needed for gaming.](https://github.com/lutris/docs/blob/master/WineDependencies.md) This will especially be useful for people planning to play osu on nVidia and Intel GPUs as they usually run more quickly into issues but AMD users are not 100% exempt from needing troubleshooting. If you don't want to install all the recommended packages then the following ones are the most important for playing osu.
 
 
