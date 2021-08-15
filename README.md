@@ -2,8 +2,19 @@
 
 An osu-wine installer, forked from mrniceguy127's installer. This one basically just goes through the steps listed [here](https://osu.ppy.sh/community/forums/topics/367783) with the exception of the optional Japanese fonts fix.
 
-# Important Notice
-Stop changing the path by hand in the script you dinguses, there's info on how to set a custom path in the Instructions.
+# Important Notice on custom install locations
+Stop changing the path by hand in the script you dinguses, there's info on how to set a custom path:
+
+You can specifiy your own WINEPREFIX, WINESERVER, WINE and WINETRICKS in your environment. Defaults are used otherwise of course. e.g. `WINEPREFIX="..." WINE="..." WINESERVER="..." ./install-osu`
+The most relevant for you if you want to install osu in a non-default location would be `WINEPREFIX="/your/path/for/osu" ./install-osu`
+
+# Pre-installation notice
+This is 100% relevant to nVidia/Intel GPUs. AMD GPUs should be fine but in case any issues come up refer to this.
+To prevent an error code in terminal when trying to launch osu which reads `X Error of failed request: BadWindow` or something similar you will need to install the following packages first:
+Arch - `lib32-gst-plugins-base-libs lib32-libxcomposite icoutils`
+
+Many distros do not ship the necessary package for osu to connect to its servers. This can prevent the initial client install to work properly. Following package should help solve this issue:
+Arch - `lib32-gnutls`
 
 # Instructions
 
@@ -13,7 +24,6 @@ Stop changing the path by hand in the script you dinguses, there's info on how t
 4. `./install-osu` Keep in mind that because of the necessary dependencies installed through winetricks it WILL take a while to install everything. osu! will also launch at some point, so make sure to close it when it does.
 5. Launch osu. You can either type `osu` in the command line, or if you like GUI's, you can just search "osu" in whatever application launcher you might have. Use the command `osukill` to force kill osu.
 
-You can also specifiy your own WINEPREFIX, WINESERVER, WINE and WINETRICKS in your environment. Defaults are used otherwise of course. e.g. `WINEPREFIX="..." WINE="..." WINESERVER="..." ./install-osu`
 
 # Discord Rich Presence
 
