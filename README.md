@@ -12,15 +12,12 @@ The most relevant for you if you want to install osu in a non-default location w
 This is 100% relevant to nVidia/Intel GPUs. AMD GPUs should be fine but in case any issues come up refer to this.
 
 
-Make sure `lib32-nvidia-utils` is installed or else the game won't run at full speed for some reason.
+PLEASE INSTALL THE APPROPRIATE GRAPHICS DRIVERS/PACKAGES
+https://github.com/lutris/docs/blob/master/InstallingDrivers.md
 
 
 The easiest way is to follow the [Lutris documentation on installing the most important dependencies needed for gaming.](https://github.com/lutris/docs/blob/master/WineDependencies.md) This will especially be useful for people planning to play osu on nVidia and Intel GPUs as they usually run more quickly into issues but AMD users are not 100% exempt from needing troubleshooting. If you don't want to install all the recommended packages then the following ones are the most important for playing osu.
 
-
-To prevent an error code in terminal when trying to launch osu which reads `X Error of failed request: BadWindow` or something similar you will need to install the following packages first:
-
-Arch - `lib32-gst-plugins-base-libs lib32-libxcomposite icoutils`
 
 
 Many distros do not ship the necessary package for osu to connect to its servers. This can prevent the initial client install to work properly. Following package should help solve this issue:
