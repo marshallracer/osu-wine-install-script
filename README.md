@@ -35,7 +35,7 @@ The easiest way to get all relevant dependencies installed is to follow the [Lut
 1. Install wine and winetricks. This has been tested with the latest version of wine-staging 5.22 at the time of writing.
 2. `git clone https://github.com/marshallracer/osu-wine-install-script`
 3. `cd osu-wine-install-script`
-4. `./install-osu` Keep in mind that because of the necessary dependencies installed through winetricks it WILL take a while to install everything. osu! will also launch at some point, so make sure to close it when it does.
+4. `./install-osu` - <b>DO NOT INSTALL MONO</b> - Keep in mind that because of the necessary dependencies installed through winetricks it WILL take a while to install everything. osu! will also launch at some point, so make sure to close it when it does.
 5. Launch osu. You can either type `osu` in the command line, or if you like GUI's, you can just search "osu" in whatever application launcher you might have. Use the command `osukill` to force kill osu.
 
 
