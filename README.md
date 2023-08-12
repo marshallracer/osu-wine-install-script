@@ -22,7 +22,8 @@ Arch - `lib32-gst-plugins-base-libs lib32-libxcomposite icoutils`
 For nVidia Cards:
 Make sure `lib32-nvidia-utils` is installed or else the game won't run at full speed for some reason.
 
-Some distros do not ship the necessary package for osu to connect to its servers. This can prevent the initial client install to work properly. Following package should help solve this issue:
+Some distros do not ship the necessary package for osu to connect to its servers. This can prevent the initial client install to work properly.
+Following package should help solve this issue:
 Arch - `lib32-gnutls`
 
 The easiest way to get all relevant dependencies installed is to follow the [Lutris documentation on installing the most important dependencies needed for gaming.](https://github.com/lutris/docs/blob/master/WineDependencies.md) This will especially be useful for people planning to play osu on nVidia and Intel GPUs as they usually run more quickly into issues but AMD users are not 100% exempt from needing troubleshooting.
