@@ -18,34 +18,9 @@ fi
 
 if [[ $(uname) == "Linux" ]]; then
   os="linux"
-elif [[ $(uname) == "Darwin" ]]; then
-  os="mac"
 else
   echo "Your system is not supported by osu-install"
   exit 1
-fi
-
-if [[ $1 && $1 == "--no-root" ]]; then
-  if [[ $os == "mac" ]]; then
-    no_root="mac"
-  else
-    no_root=true
-  fi
-else
-  if [[ $os == "mac" ]]; then
-    no_root="mac"
-  else
-    no_root=false
-  fi
-fi
-
-if [[ $no_root == "false" ]]; then
-  echo "ROOT IS REQUIRED TO ADD OSU TO /usr/bin and /usr/share"
-  sudo echo "Thanks!"
-
-  if [[ $? != 0 ]] ; then
-    exit
-  fi
 fi
 
 TMP_DIR="/tmp/osu-wine"
@@ -109,7 +84,11 @@ EOF
 "$WINE" regedit dsound.reg
 
 # osu! Installer
-print_sect "Installing osu! Please close osu! after it has launched!"
+print_sect "Installing osu! Do NOT change the path in the osu!-installer as this will mess with the actual install path set with the WINEPREFIX-variable. Please close the client after it has launched! (and prepare for maximum volume, thanks peppy)"
+echo "If you haven't already DO NOT FORGET TO ADD $HOME/.local/bin to your PATH with the following command (you can copy it now and enter it after running the script or right now in a second terminal):"
+echo "PATH=\"${PATH:+${PATH}:}$HOME/.local/bin\""
+print_sect "If you understood the above directions press Enter to proceed."
+read
 
 if [[ -e "osu!install.exe" ]]; then
   echo "osu! installer already downloaded!"
@@ -144,12 +123,10 @@ echo "cd \"$WINEPREFIX/drive_c/users/$USER/AppData/Local/osu!\"" >> osu
 print_sect "Discord RPC"
 if [[ "$DISCORDRPC" == "true" ]]; then
   echo "Downloading Discord RPC bridge..."
-  curl -O -J -L 'https://github.com/0e4ef622/wine-discord-ipc-bridge/releases/download/v0.0.1/winediscordipcbridge.exe'
+  curl -O -J -L 'https://github.com/0e4ef622/wine-discord-ipc-bridge/releases/download/v0.0.2/winediscordipcbridge.exe'
   mv "winediscordipcbridge.exe" "$WINEPREFIX/drive_c/users/$USER/Local Settings/Application Data/osu!/"
   if [[ $os == "linux" ]]; then
     echo "\"$WINE\" \"$WINEPREFIX/drive_c/users/$USER/AppData/Local/osu!/winediscordipcbridge.exe\" &" >> osu
-  elif [[ $os == "mac" ]]; then
-    echo "exec $(which wine) \"$WINEPREFIX/drive_c/users/$USER/AppData/Local/osu!/winediscordipcbridge.exe\" &" >> osu
   fi
 else
   echo "Skipping Discord RPC install."
@@ -157,22 +134,15 @@ fi
 
 if [[ $os == "linux" ]]; then
   echo "$WINE \"$WINEPREFIX/drive_c/users/$USER/AppData/Local/osu!/osu!.exe\" \"\$@\"" >> osu
-elif [[ $os == "mac" ]]; then
-  echo "exec $(which wine) \"$WINEPREFIX/drive_c/users/$USER/AppData/Local/osu!/osu!.exe\" \"\$@\"" >> osu
 fi
 
-if [[ $no_root == "true" ]]; then
-  # creating bin folder in .local to avoid use of root in case it doesn't exist
-  # remember to add the folder to your $PATH by issuing "export PATH=$HOME/.local/bin:$PATH" in a terminal
-  mkdir -p "$HOME/.local/bin/"
-  mv osu $HOME/.local/bin/osu
-  chmod +x $HOME/.local/bin/osu
-elif [[ $no_root == "false" ]]; then
-  print_sect "REQUESTING ROOT ACCESS TO ADD OSU TO /usr/bin"
-  sudo mv osu /usr/bin/osu
-  sudo chmod +x /usr/bin/osu
-fi
-# todo: add whatever is needed for macOS to this section that is equivalent to the oldsu script
+
+# creating bin folder in .local in case it doesn't exist to avoid use of root
+# use command in the following line if commands do not work after finishing the script
+# PATH="${PATH:+${PATH}:}$HOME/.local/bin"
+mkdir -p "$HOME/.local/bin/"
+mv osu $HOME/.local/bin/osu
+chmod +x $HOME/.local/bin/osu
 
 
 # Kill script
@@ -184,13 +154,8 @@ EOF
 echo "export WINEPREFIX=\"$WINEPREFIX\"" >> osukill
 echo "\"$WINESERVER\" -k" >> osukill
 
-if [[ $no_root == "true" ]]; then
-  mv osukill $HOME/.local/bin/osukill
-  chmod +x $HOME/.local/bin/osukill
-elif [[ $no_root == "false" ]]; then
-  sudo mv osukill /usr/bin/osukill
-  sudo chmod +x /usr/bin/osukill
-fi
+mv osukill $HOME/.local/bin/osukill
+chmod +x $HOME/.local/bin/osukill
 
 if [[ $os == "linux" ]]; then
   # Desktop file
