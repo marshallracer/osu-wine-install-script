@@ -38,7 +38,7 @@ Make sure `lib32-nvidia-utils` is installed or else the game won't run at full s
 2. `git clone https://github.com/marshallracer/osu-wine-install-script`
 3. `cd osu-wine-install-script`
 4. `./install-osu` - <b>DO NOT INSTALL MONO</b> - Keep in mind that because of the necessary dependencies installed through winetricks it WILL take a while to install everything. osu! will also launch at some point, so make sure to close it when it does.
-- Add the path the launcher is installed to to your PATH if it isn't already `PATH="${PATH:+${PATH}:}$HOME/.local/bin"`
+- Add the path the launcher is installed to to your PATH if it isn't already. Copy `export PATH=$HOME/.local/bin/:$PATH` and add it to your users bash profile [just as explained in this Arch Wiki article](https://wiki.archlinux.org/title/Environment_variables#Per_user).
 5. Launch osu. You can either type `osu` in the command line, or if you like GUI's, you can just search "osu" in whatever application launcher you might have. Use the command `osukill` to force kill osu.
 
 
