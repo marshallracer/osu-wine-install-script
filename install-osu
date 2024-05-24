@@ -85,8 +85,8 @@ EOF
 
 # osu! Installer
 print_sect "Installing osu! Do NOT change the path in the osu!-installer as this will mess with the actual install path set with the WINEPREFIX-variable. Please close the client after it has launched! (and prepare for maximum volume, thanks peppy)"
-echo "If you haven't already DO NOT FORGET TO ADD $HOME/.local/bin to your PATH with the following command (you can copy it now and enter it after running the script or right now in a second terminal):"
-echo "PATH=\"${PATH:+${PATH}:}$HOME/.local/bin\""
+echo "If you haven't already DO NOT FORGET TO ADD $HOME/.local/bin to your PATH with the following command (append it to the end of $HOME/.bash_profile as explained in the github readme):"
+echo "export PATH=$HOME/.local/bin/:$PATH"
 print_sect "If you understood the above directions press Enter to proceed."
 read
 
@@ -139,7 +139,7 @@ fi
 
 # creating bin folder in .local in case it doesn't exist to avoid use of root
 # use command in the following line if commands do not work after finishing the script
-# PATH="${PATH:+${PATH}:}$HOME/.local/bin"
+# export PATH=$HOME/.local/bin/:$PATH
 mkdir -p "$HOME/.local/bin/"
 mv osu $HOME/.local/bin/osu
 chmod +x $HOME/.local/bin/osu
